@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/prettierrc",
   "plugins": ["@ianvs/prettier-plugin-sort-imports"],
-  "printWidth": 200,
+  "printWidth": 120,
   "trailingComma": "all",
   "tabWidth": 2,
   "useTabs": false,
@@ -12,15 +12,7 @@
   "endOfLine": "lf",
   "singleAttributePerLine": true,
   "importOrderParserPlugins": ["typescript", "jsx", "decorators-legacy"],
-  "importOrder": [
-    "<BUILTIN_MODULES>",
-    "",
-    "<THIRD_PARTY_MODULES>",
-    "",
-    "^@/(.*)$",
-    "",
-    "^[./]"
-  ],
+  "importOrder": ["<BUILTIN_MODULES>", "", "<THIRD_PARTY_MODULES>", "", "^@/(.*)$", "", "^[./]"],
   "importOrderSeparation": true,
   "importOrderSortSpecifiers": true,
   "importOrderTypeScriptVersion": "5.0.0"

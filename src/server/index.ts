@@ -5,15 +5,14 @@
 import fs from 'fs';
 import path from 'path';
 
-// import { fileURLToPath } from 'url';
-
 import dotenv from 'dotenv';
-import express, { NextFunction, Request, Response } from 'express';
+import express, { type NextFunction, type Request, type Response } from 'express';
 import { createServer as createViteServer } from 'vite';
 
 dotenv.config();
 
-// const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const ROOT_DIR = path.resolve(__dirname, '../..');
+const CONTROLLERS_DIR = path.resolve(__dirname, 'controllers');
 
 async function createServer() {
   const app = express();
@@ -30,12 +29,45 @@ async function createServer() {
   // express router (express.Router()), you should use router.use
   app.use(vite.middlewares);
 
+  /**
+   * Creating own API route middleware.
+   */
+
+  const apiRouter = express.Router();
+
+  await fs.readdirSync(CONTROLLERS_DIR).forEach(async (controllerFile: string) => {
+    const routePath = controllerFile.replace('.controller.ts', '');
+    const controller = await import(`${CONTROLLERS_DIR}/${controllerFile}`);
+    apiRouter.use(`/${routePath}`, controller.default(apiRouter));
+
+    // apiRouter.get(`/${routePath}`, (_, response: Response) => response.send('FORM GET'));
+    // apiRouter.post(`/${routePath}`, (_, response: Response) => response.send('FORM POST'));
+
+    // Handling unknown routes not existing in the controllers.
+    apiRouter.use('*', (_, response: Response) => response.status(404).send('API route not found'));
+  });
+
+  // Root API route for health check.
+  apiRouter.get('', (_, response: Response) => response.send('API Default'));
+
+  // All api routes will be prefixed with "/api".
+  app.use('/api', apiRouter);
+
+  /**
+   * End of API route middleware.
+   */
+
   app.use('*', async (request: Request, response: Response, next: NextFunction) => {
     const url = request.originalUrl;
 
     try {
-      // 1. Read index.html
-      let template = fs.readFileSync(path.resolve(__dirname, '../../index.html'), 'utf-8');
+      // 1. Read index.html depending on app environment.
+      //    Reference: https://vitejs.dev/guide/ssr.html#building-for-production
+      const templatePath =
+        process.env.APP_ENVIRONMENT === 'production'
+          ? path.resolve(ROOT_DIR, 'dist/client/index.html')
+          : path.resolve(ROOT_DIR, 'index.html');
+      let template = fs.readFileSync(templatePath, 'utf-8');
 
       // 2. Apply Vite HTML transforms. This injects the Vite HMR client,
       //    and also applies HTML transforms from Vite plugins, e.g. global
@@ -45,7 +77,9 @@ async function createServer() {
       // 3. Load the server entry. ssrLoadModule automatically transforms
       //    ESM source code to be usable in Node.js! There is no bundling
       //    required, and provides efficient invalidation similar to HMR.
-      const { render } = await vite.ssrLoadModule('/src/app-server.ts');
+      const entryServerPath =
+        process.env.APP_ENVIRONMENT === 'production' ? '/dist/server/entry-server.mjs' : '/src/entry-server.ts';
+      const { render } = await vite.ssrLoadModule(entryServerPath);
 
       // 4. render the app HTML. This assumes entry-server.js's exported
       //     `render` function calls appropriate framework SSR APIs,
@@ -65,7 +99,7 @@ async function createServer() {
     }
   });
 
-  app.listen(process.env.APP_SERVER_PORT);
+  app.listen(process.env.APP_SERVER_PORT || 3000);
 }
 
 createServer();
