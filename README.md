@@ -27,11 +27,15 @@ APP_SERVER_PORT=3000
 npm run dev:client
 ```
 
+Access the app using `http://localhost:5173`.
+
 ### Compile and Hot-Reload for Development SSR
 
 ```sh
 npm run dev:server
 ```
+
+Access the app using `http://localhost:3000`.
 
 ### Run Unit Tests with [Vitest](https://vitest.dev/)
 
@@ -61,6 +65,7 @@ Previous: [How to register global components in Vue 3 dynamically?](https://dev.
 
 ### To Do:
 
+- Change port number for `npm run dev:client` using env `APP_CLIENT_PORT` variable.
 - Finish setup for production scenario.
 - Project cleanup.
 - Finish component stories.
