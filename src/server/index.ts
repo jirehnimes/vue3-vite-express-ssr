@@ -34,14 +34,20 @@ async function createServer() {
    */
 
   const apiRouter = express.Router();
+  apiRouter.use((_, response: Response, next: NextFunction) => {
+    response.set({
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'DELETE,GET,PATCH,POST,PUT',
+      // Setting generic response content type to JSON.
+      'Content-Type': 'application/json; charset=utf-8',
+    });
+    next();
+  });
 
   await fs.readdirSync(CONTROLLERS_DIR).forEach(async (controllerFile: string) => {
     const routePath = controllerFile.replace('.controller.ts', '');
     const controller = await import(`${CONTROLLERS_DIR}/${controllerFile}`);
     apiRouter.use(`/${routePath}`, controller.default(apiRouter));
-
-    // apiRouter.get(`/${routePath}`, (_, response: Response) => response.send('FORM GET'));
-    // apiRouter.post(`/${routePath}`, (_, response: Response) => response.send('FORM POST'));
 
     // Handling unknown routes not existing in the controllers.
     apiRouter.use('*', (_, response: Response) => response.status(404).send('API route not found'));

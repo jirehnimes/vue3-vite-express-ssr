@@ -6,7 +6,7 @@ export const render = async () => {
   /**
    * Creating the Vue app to the server side and rendering it to HTML string.
    */
-  const app = createApp();
+  const app = await createApp();
 
   return await renderToString(app);
 };

@@ -1,5 +1,5 @@
 import createApp from './app';
 
-const app = createApp();
+const app = await createApp();
 
 app.mount('#app');
