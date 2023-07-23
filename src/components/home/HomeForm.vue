@@ -27,11 +27,13 @@ import FormInputEmail from '../FormInputEmail/index'; import FormInputPassword f
     <FormInputEmail
       v-model="form.email.$model"
       :message="formatFormInputErrors(form.email.$errors)"
+      :is-error="form.email.$errors.length > 0"
     />
 
     <FormInputPassword
       v-model="form.password.$model"
       :message="formatFormInputErrors(form.password.$errors)"
+      :is-error="form.password.$errors.length > 0"
     />
 
     <div class="button-group">
