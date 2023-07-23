@@ -2,6 +2,7 @@ import { createApp as createNonSSRApp, createSSRApp } from 'vue';
 
 import App from './App.vue';
 import { registerComponents } from './components/common/components';
+import { registerFontAwesome } from './icons';
 import { router } from './router';
 
 /**
@@ -13,6 +14,7 @@ const createApp = async () => {
   const isSSR = typeof window === 'undefined';
   const app = (isSSR === true ? createSSRApp : createNonSSRApp)(App);
 
+  registerFontAwesome(app);
   await registerComponents(app);
 
   app.use(router(isSSR));

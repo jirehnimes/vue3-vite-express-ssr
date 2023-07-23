@@ -1,24 +1,38 @@
 import FormInputEmail from '../FormInputEmail/index'; import FormInputPassword from '../FormInputPassword copy/index';
 <template>
+  <Notification ref="notificationDOM">
+    {{ notificationMessage }}
+  </Notification>
+
   <form
     class="form"
     @submit.prevent="() => handleSubmit(form)"
   >
     <FormInput
       label="First Name"
+      placeholder="Enter your first name"
       v-model="form.first_name.$model"
       :message="formatFormInputErrors(form.first_name.$errors)"
+      :is-error="form.first_name.$errors.length > 0"
     />
 
     <FormInput
       label="Last Name"
+      placeholder="Enter your last name"
       v-model="form.last_name.$model"
       :message="formatFormInputErrors(form.last_name.$errors)"
+      :is-error="form.last_name.$errors.length > 0"
     />
 
-    <FormInputEmail v-model="form.email.$model" />
+    <FormInputEmail
+      v-model="form.email.$model"
+      :message="formatFormInputErrors(form.email.$errors)"
+    />
 
-    <FormInputPassword v-model="form.password.$model" />
+    <FormInputPassword
+      v-model="form.password.$model"
+      :message="formatFormInputErrors(form.password.$errors)"
+    />
 
     <div class="button-group">
       <Button
@@ -41,14 +55,10 @@ import FormInputEmail from '../FormInputEmail/index'; import FormInputPassword f
 <script setup lang="ts">
 import { useVuelidate, type Validation } from '@vuelidate/core';
 import { email, required } from '@vuelidate/validators';
-import { onMounted, ref } from 'vue';
+import { onMounted, onUpdated, ref, toRaw } from 'vue';
 
-type FormType = {
-  first_name: string | null;
-  last_name: string | null;
-  email: string | null;
-  password: string | null;
-};
+import { createForm } from '@/api/form.api';
+import { type FormType } from '@/types/form.type';
 
 const FORM_INITIAL: FormType = {
   first_name: null,
@@ -57,13 +67,15 @@ const FORM_INITIAL: FormType = {
   password: null,
 };
 
+const notificationDOM = ref<any>(undefined);
+const notificationMessage = ref<string>('');
 const formState = ref<FormType>({ ...FORM_INITIAL });
 
 const formRules: Record<keyof FormType, any> = {
   first_name: { required },
   last_name: { required },
-  email: { required },
-  password: { required, email },
+  email: { required, email },
+  password: { required },
 };
 
 const form = useVuelidate<FormType>(formRules, formState);
@@ -73,31 +85,50 @@ const formatFormInputErrors = (errors: any[]): string[] => {
 };
 
 const handleReset = () => {
+  notificationDOM.value?.hide();
+  notificationMessage.value = '';
   formState.value = { ...FORM_INITIAL };
   form.value.$reset();
+};
+
+const handleSubmitRequest = async (_form: FormType) => {
+  try {
+    const { data } = await createForm(_form);
+    console.log('SUCCESS FORM', data);
+
+    notificationDOM.value?.show('success');
+    notificationMessage.value = 'Form submitted successfully!';
+  } catch (e: any) {
+    // Catches error thrown by API.
+    notificationDOM.value?.show('error');
+    notificationMessage.value = 'Something went wrong, please try again.';
+  }
 };
 
 const handleSubmit = async (_form: Validation) => {
   const isFormValid = await _form.$validate();
 
-  console.log('HANDLE SUBMIT', isFormValid);
-
   if (isFormValid === false) {
-    console.error('FORM FAILED');
+    notificationDOM.value?.show('error');
+    notificationMessage.value = 'Please fix all the errors in the form and try again.';
 
     return;
   }
 
-  console.log('PROCEED WITH FORM');
+  handleSubmitRequest(toRaw(formState.value));
 };
 
 onMounted(() => {
+  // Resets the form when the page is mounted.
   handleReset();
 });
 </script>
 
 <style scoped lang="sass">
 .button-group
+  margin-top: 24px
+
+  // Flex
   display: flex
   flex-direction: column
   gap: 12px

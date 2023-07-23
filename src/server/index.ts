@@ -34,6 +34,10 @@ async function createServer() {
    */
 
   const apiRouter = express.Router();
+
+  apiRouter.use(express.urlencoded({ extended: true }));
+  apiRouter.use(express.json());
+
   apiRouter.use((_, response: Response, next: NextFunction) => {
     response.set({
       'Access-Control-Allow-Origin': '*',
@@ -44,17 +48,21 @@ async function createServer() {
     next();
   });
 
-  await fs.readdirSync(CONTROLLERS_DIR).forEach(async (controllerFile: string) => {
+  for (const controllerFile of fs.readdirSync(CONTROLLERS_DIR)) {
     const routePath = controllerFile.replace('.controller.ts', '');
     const controller = await import(`${CONTROLLERS_DIR}/${controllerFile}`);
-    apiRouter.use(`/${routePath}`, controller.default(apiRouter));
 
-    // Handling unknown routes not existing in the controllers.
-    apiRouter.use('*', (_, response: Response) => response.status(404).send('API route not found'));
-  });
+    controller.default(`/${routePath}`, apiRouter);
+  }
 
   // Root API route for health check.
-  apiRouter.get('', (_, response: Response) => response.send('API Default'));
+  apiRouter.get('/', (_, response: Response) => response.send('API Default'));
+
+  // Handling unknown routes not existing in the controllers.
+  apiRouter.use((_, response: Response) => response.status(404).send('API route not found'));
+
+  // Checking API routes.
+  // console.log(apiRouter.stack);
 
   // All api routes will be prefixed with "/api".
   app.use('/api', apiRouter);
