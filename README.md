@@ -63,6 +63,7 @@ Previous: [How to register global components in Vue 3 dynamically?](https://dev.
 
 - Finish setup for production scenario.
 - Project cleanup.
+- Finish component stories.
 - Integrate RxDB for sample database integration in server-side.
 
 ---
