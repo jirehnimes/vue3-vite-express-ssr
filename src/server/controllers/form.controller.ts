@@ -7,22 +7,22 @@ import FormService from '../services/form.service';
  * In NestJS, it is called request-scoped injection.
  */
 const form = (basePath: string, router: Router) => {
-  router.get(basePath, (_: Request, response: Response) => response.send(new FormService().findAll()));
+  router.get(basePath, async (_: Request, response: Response) => response.send(await new FormService().findAll()));
 
-  router.get(`${basePath}/:id`, (request: Request, response: Response) =>
-    response.send(new FormService().find(Number(request.params?.id))),
+  router.get(`${basePath}/:id`, async (request: Request, response: Response) =>
+    response.send(await new FormService().find(Number(request.params?.id))),
   );
 
-  router.post(basePath, (request: Request, response: Response) =>
-    response.send(new FormService().create(request.body)),
+  router.post(basePath, async (request: Request, response: Response) =>
+    response.send(await new FormService().create(request.body)),
   );
 
-  router.patch(`${basePath}/:id`, (request: Request, response: Response) =>
-    response.send(new FormService().update(Number(request.params?.id), request.body)),
+  router.patch(`${basePath}/:id`, async (request: Request, response: Response) =>
+    response.send(await new FormService().update(Number(request.params?.id), request.body)),
   );
 
-  router.delete(`${basePath}/:id`, (request: Request, response: Response) =>
-    response.send(new FormService().destroy(Number(request.params?.id))),
+  router.delete(`${basePath}/:id`, async (request: Request, response: Response) =>
+    response.send(await new FormService().destroy(Number(request.params?.id))),
   );
 };
 

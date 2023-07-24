@@ -51,6 +51,20 @@ import FormInputEmail from '../FormInputEmail/index'; import FormInputPassword f
         Reset
       </Button>
     </div>
+
+    <div
+      v-if="resultDisplay"
+      class="card mt-6"
+    >
+      <div class="card-content">
+        <h3 class="title is-5">API Result:</h3>
+
+        <p>First Name: {{ resultState.first_name }}</p>
+        <p>Last Name: {{ resultState.last_name }}</p>
+        <p>Email: {{ resultState.email }}</p>
+        <p>Password: {{ resultState.password }}</p>
+      </div>
+    </div>
   </form>
 </template>
 
@@ -72,6 +86,8 @@ const FORM_INITIAL: FormType = {
 const notificationDOM = ref<any>(undefined);
 const notificationMessage = ref<string>('');
 const formState = ref<FormType>({ ...FORM_INITIAL });
+const resultState = ref<FormType>({ ...FORM_INITIAL });
+const resultDisplay = ref<boolean>(false);
 
 const formRules: Record<keyof FormType, any> = {
   first_name: { required },
@@ -86,9 +102,20 @@ const formatFormInputErrors = (errors: any[]): string[] => {
   return errors.map((_error: any) => _error.$message);
 };
 
-const handleReset = () => {
+const resetNotification = () => {
   notificationDOM.value?.hide();
   notificationMessage.value = '';
+};
+
+const resetResult = () => {
+  resultState.value = { ...FORM_INITIAL };
+  resultDisplay.value = false;
+};
+
+const handleReset = () => {
+  resetNotification();
+  resetResult();
+
   formState.value = { ...FORM_INITIAL };
   form.value.$reset();
 };
@@ -96,7 +123,9 @@ const handleReset = () => {
 const handleSubmitRequest = async (_form: FormType) => {
   try {
     const { data } = await createForm(_form);
-    console.log('SUCCESS FORM', data);
+
+    resultState.value = data;
+    resultDisplay.value = true;
 
     notificationDOM.value?.show('success');
     notificationMessage.value = 'Form submitted successfully!';
@@ -108,6 +137,9 @@ const handleSubmitRequest = async (_form: FormType) => {
 };
 
 const handleSubmit = async (_form: Validation) => {
+  resetNotification();
+  resetResult();
+
   const isFormValid = await _form.$validate();
 
   if (isFormValid === false) {
